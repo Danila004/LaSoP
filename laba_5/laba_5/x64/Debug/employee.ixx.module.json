@@ -1,0 +1,22 @@
+{
+    "version": 1,
+    "revision": 0,
+    "rules": [
+        {
+            "primary-output": "laba_5\\x64\\Debug\\Employee.ixx.obj",
+            "outputs": [
+                "C:\\IT\\C++\\ЯСП\\laba_5\\laba_5\\x64\\Debug\\vc143.pdb",
+                "laba_5\\x64\\Debug\\",
+                "C:\\IT\\C++\\ЯСП\\laba_5\\laba_5\\x64\\Debug\\Employee.ixx.ifc"
+            ],
+            "provides": [
+                {
+                    "logical-name": "Employee",
+                    "source-path": "c:\\it\\c++\\ясп\\laba_5\\employee.ixx",
+                    "is-interface": true
+                }
+            ],
+            "requires": []
+        }
+    ]
+}
