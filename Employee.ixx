@@ -36,7 +36,6 @@ public:
 	unsigned int get_salary() const;
 	Gender get_gender() const;
 	bool get_state() const;
-	double usefulness();
 
 	friend std::istream& operator>>(std::istream& in, Employee& e);
 	friend std::ostream& operator<<(std::ostream& out, const Employee& e);
@@ -48,15 +47,9 @@ public:
 
 export std::istream& operator>>(std::istream& in, Employee& e)
 {
-	std::string border{};
-	in >> border;
-	if (border.find('=') != std::string::npos || border == "")
-		throw std::invalid_argument("================");
-	
-	e.surname = border;
 	int year{}, month{}, day{};
 	std::string g{}, p{};
-	in >> e.name >> e.patronymic >> day >> month >> year;
+	in >> e.surname >> e.name >> e.patronymic>>day>>month>>year;
 	e.start_date = std::chrono::year_month_day(std::chrono::year(year), std::chrono::month(month), std::chrono::day(day));
 	in >> day >> month >> year;
 	e.end_date = std::chrono::year_month_day(std::chrono::year(year), std::chrono::month(month), std::chrono::day(day));
@@ -115,11 +108,6 @@ bool Employee::get_state() const
 	return state;
 }
 
-double Employee::usefulness()
-{
-	return 50000/salary + (int(position) + 1) * (int(gender) + 1);
-}
-
 bool Employee::operator==(const Employee& e)
 {
 	return this->name <=> e.name == 0 && this->surname <=> e.surname == 0 && this->patronymic <=> e.patronymic == 0 && this->start_date <=> e.start_date == 0 &&
@@ -159,6 +147,6 @@ std::string Employee::to_string() const
 		break;
 	}
 	res += std::to_string(salary) + "\n" +
-		std::to_string(state) + "\n";
+		   std::to_string(state) + "\n";
 	return res;
 }

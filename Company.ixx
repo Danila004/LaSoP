@@ -1,7 +1,6 @@
 module;
 
 #include<iostream>
-#include<iomanip>
 #include<string>
 #include<chrono>
 #include<format>
@@ -9,187 +8,105 @@ module;
 #include<functional>
 #include<algorithm>
 #include<iterator>
-#include<fstream>
-import Container;
-import Department;
+
 
 export module Company;
 
 export
+template<typename T>
 class Company
 {
 private:
-	Container<Department> v;
+	std::vector<T> v;
 public:
-	Company();
+	Company() {}
 
-	void add(Department elem);
-	void del(std::string name);
+	void add(T elem);
+	void del(T elem);
 	void del(size_t i);
-	void del_worse();
-	void remove(size_t i, Department& source);
-	void print(std::ostream_iterator<Department> it);
-	void input(std::istream_iterator<Department> it);
-	void statistic();
-	std::vector<Department>& get();
+	void change(T elem, size_t i);
+	void change(T old_elem, T new_elem);
+	void print(std::ostream_iterator<T> it);
+	void input(std::istream_iterator<T> it);
+	void sort(std::function<bool(T& a, T& b)>& compare);
+	Company<T> select(std::function<bool(const T& a)>& lambda);
+	std::vector<T>& get();
 	bool empty();
-	~Company();
 };
 
 
-export
-Company::Company()
+
+export template<typename T>
+void Company<T>::add(T elem)
 {
-	std::ifstream file("state.txt");
-	std::istream_iterator<Department> in(file);
-	v.input(in);
-	file.close();
+	v.push_back(elem);
 }
 
-void Company::add(Department elem)
+export template<typename T>
+void Company<T>::del(T elem)
 {
-	v.add(elem);
+	std::erase(v, elem);
 }
 
-export
-void Company::del(std::string name)
+export template<typename T>
+void Company<T>::del(size_t i)
 {
-	size_t i{};
-	v.del(i);
+	if (v.size() > i)
+		v.erase(v.begin() + i);
 }
 
-export
-void Company::del(size_t i)
+export template<typename T>
+void Company<T>::change(T elem, size_t i)
 {
-	v.del(i);
+	if (v.size() > i)
+		v[i] = elem;
 }
 
-export
-void Company::del_worse()
+template<typename T>
+void Company<T>::change(T old_elem, T new_elem)
 {
-	size_t department{}, employee{};
-	double useful{ v.get()[0].get()[0].usefulness() }, tmp_useful{};
-	for(int i{};i<v.size();++i)
-		for (int j{};j<v.get()[i].size();++j)
-		{
-			tmp_useful = v.get()[i].get()[j].usefulness();
-			if (useful > tmp_useful)
-			{
-				department = i;
-				employee = j;
-				useful = tmp_useful;
-			}
-		}
-	v.get()[department].del(employee);
+	auto it = std::find(v.begin(), v.end(), old_elem);
+	if(it != v.end())
+		*it = new_elem;
 }
 
-export
-void Company::remove(size_t i, Department& source)
+export template<typename T>
+void Company<T>::print(std::ostream_iterator<T> it)
 {
-	std::copy(source.get().begin(), source.get().end(), std::back_inserter(v.get()[i].get()));
+	std::copy(v.begin(), v.end(), it);
 }
 
-export
-void Company::print(std::ostream_iterator<Department> it)
+export template<typename T>
+void Company<T>::input(std::istream_iterator<T> it)
 {
-	v.print(it);
+	std::istream_iterator<T> eos;
+	std::copy(it, eos, std::back_inserter(v));
 }
 
-export
-void Company::input(std::istream_iterator<Department> it)
+export template<typename T>
+void Company<T>::sort(std::function<bool(T& a, T& b)>& compare)
 {
-	v.input(it);
+	std::sort(v.begin(), v.end(), compare);
 }
 
-void Company::statistic()
+template<typename T>
+Company<T> Company<T>::select(std::function<bool(const T& a)>& lambda)
 {
-	unsigned int max_salary_department{}, min_salary_department{}, max_salary_company{},
-		min_salary_company{ v.get()[0].get()[0].get_salary() }, sum_salary{}, k{};
-	double useful{ v.get()[0].get()[0].usefulness() }, tmp_useful{};
-	Employee best_employee{ v.get()[0].get()[0] };
-	std::string** matrix = new std::string*[5];
-	for (int i{}; i < 5; ++i)
-		matrix[i] = new std::string[v.size()];
-
-	for (Department i : v.get())
-	{
-		matrix[0][k] = i.get_name();
-		matrix[1][k] = std::to_string(i.size());
-		max_salary_department = v.get()[k].get()[0].get_salary();
-		min_salary_department = v.get()[k].get()[0].get_salary();
-		for (Employee j : i.get())
-		{
-			sum_salary += j.get_salary();
-			tmp_useful = j.usefulness();
-			if (tmp_useful > useful)
-			{
-				useful = tmp_useful;
-				best_employee = j;
-			}
-			if (max_salary_department < j.get_salary())
-				max_salary_department = j.get_salary();
-			if(min_salary_department > j.get_salary())
-				min_salary_department = j.get_salary();
-		}
-		matrix[2][k] = std::to_string(sum_salary);
-		matrix[3][k] = std::to_string(max_salary_department);
-		matrix[4][k] = std::to_string(min_salary_department);
-		++k;
-		sum_salary = 0;
-		if (max_salary_company < max_salary_department)
-			max_salary_company = max_salary_department;
-		if (min_salary_company > min_salary_department)
-			min_salary_company = min_salary_department;
-	}
-
-	std::cout << "Название отдела      ";
-	for (int i{}; i < v.size(); ++i)
-		std::cout << std::setw(15) << std::left << matrix[0][i];
-	std::cout << '\n';
-	std::cout << "Кол-во работников    ";
-	for (int i{}; i < v.size(); ++i)
-		std::cout << std::setw(15) << std::left << matrix[1][i];
-	std::cout << '\n';
-	std::cout << "Сумарная зарплата    ";
-	for (int i{}; i < v.size(); ++i)
-		std::cout << std::setw(15) << std::left << matrix[2][i];
-	std::cout << '\n';
-	std::cout << "Макс. зарплата       ";
-	for (int i{}; i < v.size(); ++i)
-		std::cout << std::setw(15) << std::left << matrix[3][i];
-	std::cout << '\n';
-	std::cout << "Мин. зарплата        ";
-	for (int i{}; i < v.size(); ++i)
-		std::cout << std::setw(15) << std::left << matrix[4][i];
-	std::cout << "\n\n";
-	std::cout << "Макс. зарплата в компании: " << max_salary_company << '\n';
-	std::cout << "Мин. зарплата в компании : " << min_salary_company << '\n';
-	std::cout << "Лучший сотрудник компании:\n\n";
-	std::cout << best_employee << '\n';
-
-	for (int i{}; i < 5; ++i)
-		delete[] matrix[i];
-	delete[] matrix;
+	Company tmp;
+	std::copy_if(v.begin(), v.end(), std::back_inserter(tmp.v), lambda);
+	return tmp;
 }
 
-export
-std::vector<Department>& Company::get()
+template<typename T>
+std::vector<T>& Company<T>::get()
 {
-	return v.get();
+	return v;
 }
 
-export
-bool Company::empty()
+template<typename T>
+bool Company<T>::empty()
 {
-	return v.empty();
-}
-
-Company::~Company()
-{
-	std::ofstream file("state.txt");
-	std::ostream_iterator<Department> out(file,"===============\n");
-	v.print(out);
-	file.close();
+	return v.size() <=> 0 == 0;
 }
 
 
